@@ -46,7 +46,13 @@ cleanup() {
     fi
     
     # Kill any process on the frontend port
-    lsof -ti tcp:$FE_PORT | xargs kill 2>/dev/null || true
+    #lsof -ti tcp:$FE_PORT | xargs kill 2>/dev/null || true
+    # Kill process on port using Windows-compatible way (Git Bash)
+PID_TO_KILL=$(netstat -ano | grep ":$FE_PORT" | awk '{print $5}' | head -n 1)
+if [ ! -z "$PID_TO_KILL" ]; then
+    taskkill //PID $PID_TO_KILL //F 2>/dev/null || true
+fi
+
     
     # Stop Gradle daemon
     ./gradlew --stop 2>/dev/null || true
@@ -82,7 +88,7 @@ fi
 cd assessment || exit 1
 
 # Run the tests
-python3 tests.py
+python tests.py
 TEST_EXIT_CODE=$?
 
 # Exit with test result
